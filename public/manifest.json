@@ -1,0 +1,17 @@
+{
+  "name": "HMA - Hamdi Medical Academy",
+  "short_name": "HMA",
+  "description": "The Next Generation of AI-Powered Medical Education",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3135/3135810.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

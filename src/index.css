@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+
+@theme {
+  --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+  }
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  @apply font-bold text-slate-900 mb-4 mt-8;
+}
+
+.prose p {
+  @apply text-slate-600 leading-relaxed mb-4;
+}
+
+.prose ul {
+  @apply list-disc list-inside mb-4 space-y-2 text-slate-600;
+}
+
+.prose blockquote {
+  @apply border-r-4 border-blue-600 bg-blue-50 py-4 px-6 rounded-l-lg my-6 italic text-blue-900;
+}

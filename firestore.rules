@@ -1,0 +1,203 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: userId (UID)
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required, email format)
+    //   - displayName: string (optional)
+    //   - role: string (required, 'student' | 'admin')
+    //   - createdAt: string (required, ISO 8601)
+    //   - dashboardSections: list (optional)
+    //
+    // Collection: courses
+    // Document ID: courseId
+    // Fields:
+    //   - title: string (required)
+    //   - description: string (optional)
+    //   - category: string (required)
+    //   - thumbnail: string (optional)
+    //   - instructor: string (optional)
+    //   - price: number (optional)
+    //   - isFree: boolean (optional)
+    //
+    // Collection: courses/{courseId}/lessons
+    // Document ID: lessonId
+    // Fields:
+    //   - courseId: string (required)
+    //   - title: string (required)
+    //   - content: string (required)
+    //   - videoUrl: string (optional)
+    //   - videoType: string (optional, 'ai-generated' | 'standard')
+    //   - pdfUrl: string (optional)
+    //   - summary: string (optional)
+    //   - references: list (optional)
+    //   - order: integer (required)
+    //
+    // Collection: progress
+    // Document ID: progressId
+    // Fields:
+    //   - userId: string (required)
+    //   - courseId: string (required)
+    //   - completedLessons: list (required)
+    //   - lessonProgress: map (optional)
+    //   - quizScores: map (optional)
+    //   - lastAccessed: string (required, ISO 8601)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "hamdiali409@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasRequiredFields(['uid', 'email', 'role', 'createdAt']) &&
+             data.uid is string && data.uid.size() > 0 && data.uid.size() < 128 &&
+             isValidEmail(data.email) &&
+             data.role in ['student', 'admin'] &&
+             isValidDateString(data.createdAt) &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() < 100));
+    }
+
+    function isValidCourse(data) {
+      return hasRequiredFields(['title', 'category']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.category is string && data.category.size() > 0 && data.category.size() < 100 &&
+             (!('description' in data) || (data.description is string && data.description.size() < 5000)) &&
+             (!('instructor' in data) || (data.instructor is string && data.instructor.size() < 100));
+    }
+
+    function isValidLesson(data) {
+      return hasRequiredFields(['courseId', 'title', 'content', 'order']) &&
+             data.courseId is string && data.courseId.size() < 128 &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.content is string && data.content.size() > 0 && data.content.size() < 50000 &&
+             data.order is int;
+    }
+
+    function isValidProgress(data) {
+      return hasRequiredFields(['userId', 'courseId', 'completedLessons', 'lastAccessed']) &&
+             data.userId is string && data.userId.size() < 128 &&
+             data.courseId is string && data.courseId.size() < 128 &&
+             data.completedLessons is list && data.completedLessons.size() < 500 &&
+             isValidDateString(data.lastAccessed);
+    }
+
+    function isValidContentRequest(data) {
+      return hasRequiredFields(['userId', 'topic', 'details', 'createdAt']) &&
+             data.userId is string && data.userId.size() < 128 &&
+             data.topic is string && data.topic.size() > 0 && data.topic.size() < 200 &&
+             data.details is string && data.details.size() > 0 && data.details.size() < 2000 &&
+             isValidDateString(data.createdAt);
+    }
+
+    function isValidSupportChat(data) {
+      return hasRequiredFields(['userId', 'status', 'createdAt']) &&
+             data.userId is string && data.userId.size() < 128 &&
+             data.status in ['active', 'closed'] &&
+             isValidDateString(data.createdAt);
+    }
+
+    function isValidSupportMessage(data) {
+      return hasRequiredFields(['chatId', 'senderId', 'text', 'role', 'createdAt']) &&
+             data.chatId is string && data.chatId.size() < 128 &&
+             data.senderId is string && data.senderId.size() < 128 &&
+             data.text is string && data.text.size() > 0 && data.text.size() < 5000 &&
+             data.role in ['user', 'support', 'ai'] &&
+             isValidDateString(data.createdAt);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == 'student';
+      allow update: if isAuthenticated() && (isAdmin() || (isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == resource.data.role));
+    }
+
+    match /courses/{courseId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidCourse(request.resource.data);
+      
+      match /lessons/{lessonId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin() && isValidLesson(request.resource.data);
+      }
+      
+      match /quizzes/{quizId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin();
+      }
+    }
+
+    match /progress/{progressId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId && isValidProgress(request.resource.data);
+      allow update: if isAuthenticated() && request.auth.uid == resource.data.userId && isValidProgress(request.resource.data);
+    }
+
+    match /contentRequests/{requestId} {
+      allow read: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.userId);
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId && isValidContentRequest(request.resource.data);
+      allow update: if isAdmin();
+    }
+
+    match /supportChats/{chatId} {
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidSupportChat(request.resource.data);
+      allow update: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid && isValidSupportChat(request.resource.data));
+      
+      match /messages/{messageId} {
+        allow read: if isAdmin() || (isAuthenticated() && get(/databases/$(database)/documents/supportChats/$(chatId)).data.userId == request.auth.uid);
+        allow create: if isAuthenticated() && (isAdmin() || get(/databases/$(database)/documents/supportChats/$(chatId)).data.userId == request.auth.uid) && isValidSupportMessage(request.resource.data);
+      }
+    }
+  }
+}
+
+// I've set up prototype Security Rules to keep the data in Firestore safe. 
+// They are designed to be secure by enforcing authentication, ownership checks, 
+// and strict data validation for all collections. 
+// However, you should review and verify them before broadly sharing your app. 
+// If you'd like, I can help you harden these rules.

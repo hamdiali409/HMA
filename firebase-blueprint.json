@@ -1,0 +1,214 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Stores user profile and role information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Course": {
+      "title": "Medical Course",
+      "description": "A medical course containing lessons and quizzes.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "instructor": { "type": "string" },
+        "price": { "type": "number" },
+        "isFree": { "type": "boolean" },
+        "rating": { "type": "number" },
+        "ratingCount": { "type": "integer" }
+      },
+      "required": ["title", "category"]
+    },
+    "Lesson": {
+      "title": "Course Lesson",
+      "description": "A single lesson within a course.",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "videoType": { "type": "string", "enum": ["ai-generated", "standard"] },
+        "pdfUrl": { "type": "string" },
+        "summary": { "type": "string" },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source": { "type": "string", "enum": ["PubMed", "WHO", "Other"] },
+              "title": { "type": "string" },
+              "url": { "type": "string" }
+            }
+          }
+        },
+        "order": { "type": "integer" }
+      },
+      "required": ["courseId", "title", "order"]
+    },
+    "CaseStudy": {
+      "title": "Medical Case Study",
+      "description": "A clinical case study for practical learning.",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "title": { "type": "string" },
+        "patientHistory": { "type": "string" },
+        "physicalExamination": { "type": "string" },
+        "investigations": { "type": "string" },
+        "diagnosis": { "type": "string" },
+        "management": { "type": "string" },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source": { "type": "string", "enum": ["PubMed", "WHO", "Other"] },
+              "title": { "type": "string" },
+              "url": { "type": "string" }
+            }
+          }
+        },
+        "order": { "type": "integer" }
+      },
+      "required": ["courseId", "title", "patientHistory", "order"]
+    },
+    "Quiz": {
+      "title": "Course Quiz",
+      "description": "A set of MCQs for a course or lesson.",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string", "enum": ["mcq", "case-based"] },
+        "questions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": { "type": "string" },
+              "options": { "type": "array", "items": { "type": "string" } },
+              "correctAnswer": { "type": "integer" },
+              "explanation": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["courseId", "title", "questions"]
+    },
+    "Progress": {
+      "title": "Student Progress",
+      "description": "Tracks a student's progress in a specific course.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "courseId": { "type": "string" },
+        "completedLessons": { "type": "array", "items": { "type": "string" } },
+        "lessonProgress": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "currentTime": { "type": "number" },
+              "duration": { "type": "number" },
+              "isCompleted": { "type": "boolean" },
+              "lastUpdated": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "quizScores": { "type": "object" },
+        "lastAccessed": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "courseId"]
+    },
+    "ContentRequest": {
+      "title": "Content Request",
+      "description": "A user's suggestion for new medical content.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string", "format": "email" },
+        "topic": { "type": "string" },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["video", "course", "case-study", "other"] },
+        "status": { "type": "string", "enum": ["pending", "reviewed", "implemented"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userEmail", "topic", "type", "status", "createdAt"]
+    },
+    "SupportChat": {
+      "title": "Support Chat Session",
+      "description": "A chat session between a user and support/AI.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "userName": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "closed"] },
+        "lastMessage": { "type": "string" },
+        "lastMessageAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "status", "createdAt"]
+    },
+    "SupportMessage": {
+      "title": "Support Message",
+      "description": "A message within a support chat.",
+      "type": "object",
+      "properties": {
+        "chatId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "text": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "support", "ai"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["chatId", "senderId", "text", "role", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents."
+    },
+    "/courses/{courseId}": {
+      "schema": "Course",
+      "description": "Available medical courses."
+    },
+    "/courses/{courseId}/lessons/{lessonId}": {
+      "schema": "Lesson",
+      "description": "Lessons for a specific course."
+    },
+    "/courses/{courseId}/quizzes/{quizId}": {
+      "schema": "Quiz",
+      "description": "Quizzes for a specific course."
+    },
+    "/progress/{progressId}": {
+      "schema": "Progress",
+      "description": "Tracking student progress."
+    },
+    "/contentRequests/{requestId}": {
+      "schema": "ContentRequest",
+      "description": "User content suggestions."
+    },
+    "/supportChats/{chatId}": {
+      "schema": "SupportChat",
+      "description": "Support chat sessions."
+    },
+    "/supportChats/{chatId}/messages/{messageId}": {
+      "schema": "SupportMessage",
+      "description": "Messages in a support chat."
+    }
+  }
+}

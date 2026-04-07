@@ -1,0 +1,45 @@
+{
+  "common": {
+    "home": "Home",
+    "courses": "Courses",
+    "articles": "Blog",
+    "login": "Login",
+    "logout": "Logout",
+    "requestContent": "Request Content",
+    "dashboard": "Dashboard",
+    "arabic": "العربية",
+    "english": "English",
+    "search": "Search",
+    "all": "All",
+    "free": "Free",
+    "currency": "SAR"
+  },
+  "courses": {
+    "title": "HMA Smart Course Library",
+    "subtitle": "Explore our curated collection of AI-generated and AI-powered medical courses.",
+    "searchPlaceholder": "Search for a smart course...",
+    "instructor": "Instructor",
+    "viewCourse": "View Course",
+    "noResults": "No results found",
+    "noResultsDesc": "Try searching with different keywords or changing the category.",
+    "exploreContent": "Explore Smart Content"
+  },
+  "home": {
+    "heroTitle": "HMA Platform for Medical Intelligence",
+    "heroSubtitle": "The Next Generation of Smart Medical Education",
+    "heroDescription": "HMA Medical Academy - The leading platform redefining medical education using the latest generative AI technologies.",
+    "startJourney": "Start Your Journey Now",
+    "viewDemo": "View Demo",
+    "featuresTitle": "Why Choose HMA?",
+    "featuresSubtitle": "Exclusive Features",
+    "featuresDescription": "We don't just offer courses; we provide an integrated learning experience that evolves with you and understands your academic needs using AI.",
+    "feature1Title": "Verified Smart Content",
+    "feature1Desc": "AI-generated explanations and videos accurately reviewed from global sources like PubMed and WHO.",
+    "feature2Title": "Interactive AI Videos",
+    "feature2Desc": "A unique visual experience with educational videos produced using the latest AI techniques to simplify complex concepts.",
+    "feature3Title": "Smart Progress Tracking",
+    "feature3Desc": "Advanced algorithms analyze your level and suggest the most suitable content for your learning speed and personal needs.",
+    "feature4Title": "Certified Certificates",
+    "feature4Desc": "Get professional certificates with an official seal and signature immediately upon successfully passing the final exams."
+  }
+}
